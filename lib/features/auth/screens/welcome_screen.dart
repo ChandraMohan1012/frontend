@@ -2,8 +2,8 @@ import 'package:frontend/core/theme/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+import 'package:go_router/go_router.dart';
 import 'package:frontend/core/providers/app_config_provider.dart';
-import 'package:frontend/features/auth/screens/create_account_screen.dart';
 
 class WelcomeScreen extends StatelessWidget {
   const WelcomeScreen({super.key});
@@ -163,50 +163,78 @@ class WelcomeScreen extends StatelessWidget {
                 ),
               ),
 
-              // Bottom Action: "Get started" button placed cleanly at the bottom (Sign in removed, white circle around arrow removed)
-              InkWell(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const CreateAccountScreen()),
-                  );
-                },
-                borderRadius: BorderRadius.circular(100),
-                child: Container(
-                  width: double.infinity,
-                  height: 54,
-                  padding: const EdgeInsets.symmetric(horizontal: 24),
-                  decoration: BoxDecoration(
-                    color: isDark ? Colors.white : AppColors.primary,
+              // Bottom Actions: "Get started" button and "Sign in" option
+              Column(
+                children: [
+                  InkWell(
+                    onTap: () {
+                      context.push('/create_account');
+                    },
                     borderRadius: BorderRadius.circular(100),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: isDark ? 0.35 : 0.12),
-                        blurRadius: 16,
-                        offset: const Offset(0, 4),
+                    child: Container(
+                      width: double.infinity,
+                      height: 54,
+                      padding: const EdgeInsets.symmetric(horizontal: 24),
+                      decoration: BoxDecoration(
+                        color: isDark ? Colors.white : AppColors.primary,
+                        borderRadius: BorderRadius.circular(100),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: isDark ? 0.35 : 0.12),
+                            blurRadius: 16,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
                       ),
-                    ],
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const SizedBox(width: 22),
+                          Text(
+                            config.tr('Get started', 'தொடங்குக'),
+                            style: GoogleFonts.inter(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w600,
+                              color: isDark ? Colors.black : Colors.white,
+                            ),
+                          ),
+                          Icon(
+                            Icons.arrow_forward,
+                            size: 22,
+                            color: isDark ? Colors.black : Colors.white,
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  const SizedBox(height: 14),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const SizedBox(width: 22),
                       Text(
-                        config.tr('Get started', 'தொடங்குக'),
+                        config.tr('Already have an account? ', 'ஏற்கனவே கணக்கு உள்ளதா? '),
                         style: GoogleFonts.inter(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w600,
-                          color: isDark ? Colors.black : Colors.white,
+                          fontSize: 14,
+                          color: config.secondaryTextColor,
                         ),
                       ),
-                      Icon(
-                        Icons.arrow_forward,
-                        size: 22,
-                        color: isDark ? Colors.black : Colors.white,
+                      InkWell(
+                        onTap: () {
+                          context.push('/login');
+                        },
+                        child: Text(
+                          config.tr('Sign in', 'உள்நுழைக'),
+                          style: GoogleFonts.inter(
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                            color: primaryTextColor,
+                            decoration: TextDecoration.underline,
+                          ),
+                        ),
                       ),
                     ],
                   ),
-                ),
+                ],
               ),
             ],
           ),

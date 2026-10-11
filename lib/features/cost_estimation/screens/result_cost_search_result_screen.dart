@@ -113,36 +113,71 @@ class _ResultCostSearchResultScreenState extends State<ResultCostSearchResultScr
                   borderRadius: BorderRadius.circular(28),
                   boxShadow: [BoxShadow(color: AppColors.primary.withValues(alpha: 0.06), blurRadius: 24, offset: const Offset(0, 8))],
                 ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text('Estimated budget', style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w500, color: AppColors.textTertiary)),
-                          Text('₹36,00,000', style: GoogleFonts.syne(fontSize: 28, fontWeight: FontWeight.w600, color: AppColors.primary, letterSpacing: -0.56, height: 1.15)),
-                          const SizedBox(height: 2),
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                            decoration: BoxDecoration(color: AppColors.background, borderRadius: BorderRadius.circular(100)),
-                            child: Text('₹2,250 / sq ft · 1,600 sq ft', style: GoogleFonts.inter(fontSize: 12, color: AppColors.textTertiary), maxLines: 1, overflow: TextOverflow.ellipsis),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      mainAxisAlignment: MainAxisAlignment.center,
+                child: Builder(
+                  builder: (context) {
+                    final rawData = projectProvider.rawCostData;
+                    
+                    double baseCost = 3600000;
+                    double costPerSqft = 2250;
+                    double totalArea = 1600;
+                    
+                    if (rawData != null && rawData['estimates'] != null) {
+                      String tierKey = 'standard';
+                      if (projectProvider.selectedTier == 'Tier 1') tierKey = 'basic';
+                      if (projectProvider.selectedTier == 'Tier 3') tierKey = 'premium';
+                      
+                      baseCost = (rawData['estimates'][tierKey] ?? 3600000).toDouble();
+                      costPerSqft = (rawData['cost_per_sqft']?[tierKey] ?? 2250).toDouble();
+                      totalArea = (rawData['total_area_sqft'] ?? 1600).toDouble();
+                    }
+                    
+                    if (projectProvider.selectedContractType == 'Labor Only') {
+                      baseCost = baseCost * 0.31;
+                      costPerSqft = costPerSqft * 0.31;
+                    }
+                    if (projectProvider.selectedSoil == 'Black Cotton') {
+                      baseCost *= 1.05;
+                      costPerSqft *= 1.05;
+                    } else if (projectProvider.selectedSoil == 'Loose Soil') {
+                      baseCost *= 1.08;
+                      costPerSqft *= 1.08;
+                    }
+                    
+                    final String formattedCost = _formatCurrency(baseCost);
+                    final String formattedRate = _formatCurrency(costPerSqft);
+
+                    return Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        _buildTagIcon('Engineer BOQ'),
-                        const SizedBox(height: 6),
-                        _buildTagIcon('Live TN rates'),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text('Estimated budget', style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w500, color: AppColors.textTertiary)),
+                              Text(formattedCost, style: GoogleFonts.syne(fontSize: 28, fontWeight: FontWeight.w600, color: AppColors.primary, letterSpacing: -0.56, height: 1.15)),
+                              const SizedBox(height: 2),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                decoration: BoxDecoration(color: AppColors.background, borderRadius: BorderRadius.circular(100)),
+                                child: Text('$formattedRate / sq ft · ${totalArea.round()} sq ft', style: GoogleFonts.inter(fontSize: 12, color: AppColors.textTertiary), maxLines: 1, overflow: TextOverflow.ellipsis),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            _buildTagIcon('Engineer BOQ'),
+                            const SizedBox(height: 6),
+                            _buildTagIcon('Live TN rates'),
+                          ],
+                        ),
                       ],
-                    ),
-                  ],
+                    );
+                  }
                 ),
               ),
               const SizedBox(height: 12),
@@ -152,11 +187,11 @@ class _ResultCostSearchResultScreenState extends State<ResultCostSearchResultScr
                 height: 40,
                 child: Row(
                   children: [
-                    _buildFactorDropdown('Turnkey'),
+                    _buildFactorDropdown(context, projectProvider.selectedContractType, ['Turnkey', 'Labor Only'], (val) => projectProvider.setContractType(val)),
                     const SizedBox(width: 8),
-                    _buildFactorDropdown('Tier 2'),
+                    _buildFactorDropdown(context, projectProvider.selectedTier, ['Tier 1', 'Tier 2', 'Tier 3'], (val) => projectProvider.setTier(val)),
                     const SizedBox(width: 8),
-                    _buildFactorDropdown('Red Soil'),
+                    _buildFactorDropdown(context, projectProvider.selectedSoil, ['Red Soil', 'Black Cotton', 'Loose Soil'], (val) => projectProvider.setSoil(val)),
                   ],
                 ),
               ),
@@ -380,28 +415,38 @@ class _ResultCostSearchResultScreenState extends State<ResultCostSearchResultScr
     );
   }
 
-  Widget _buildFactorDropdown(String text) {
+  Widget _buildFactorDropdown(BuildContext context, String currentVal, List<String> options, Function(String) onSelected) {
     return Expanded(
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(100),
-          border: Border.all(color: AppColors.border),
-        ),
-        alignment: Alignment.center,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Expanded(
-              child: Text(
-                text,
-                style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w500, color: AppColors.primary),
-                overflow: TextOverflow.ellipsis,
+      child: PopupMenuButton<String>(
+        onSelected: onSelected,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        color: Colors.white,
+        offset: const Offset(0, 40),
+        itemBuilder: (context) => options.map((String val) => PopupMenuItem(
+          value: val,
+          child: Text(val, style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w500, color: AppColors.primary)),
+        )).toList(),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 8),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(100),
+            border: Border.all(color: AppColors.border),
+          ),
+          alignment: Alignment.center,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Expanded(
+                child: Text(
+                  currentVal,
+                  style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w500, color: AppColors.primary),
+                  overflow: TextOverflow.ellipsis,
+                ),
               ),
-            ),
-            const Icon(Icons.keyboard_arrow_down, size: 16, color: AppColors.primary),
-          ],
+              const Icon(Icons.keyboard_arrow_down, size: 16, color: AppColors.primary),
+            ],
+          ),
         ),
       ),
     );

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:frontend/core/providers/project_provider.dart';
+import 'package:frontend/core/providers/app_config_provider.dart';
 
 class ProcessingScreen extends StatefulWidget {
   final Map<String, String>? fileData;
@@ -30,14 +31,30 @@ class _ProcessingScreenState extends State<ProcessingScreen> {
     await provider.processFloorPlan(path, name);
     
     if (mounted) {
+      if (provider.error != null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Offline mode: Using cached architectural intelligence data'),
+            backgroundColor: Color(0xFF262626),
+            duration: Duration(seconds: 3),
+          ),
+        );
+      }
       context.replace('/result/3d_model');
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final config = context.watch<AppConfigProvider>();
+    final isDark = config.isDarkMode;
+    final bgColor = config.bgColor;
+    final cardColor = config.cardColor;
+    final primaryTextColor = config.primaryTextColor;
+    final borderColor = config.borderColor;
+
     return Scaffold(
-      backgroundColor: AppColors.backgroundLight,
+      backgroundColor: bgColor,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20.0),
@@ -49,21 +66,21 @@ class _ProcessingScreenState extends State<ProcessingScreen> {
                 child: Column(
                   children: [
                     Text(
-                      'Processing',
+                      config.tr('Processing', 'செயலாக்குகிறது'),
                       style: GoogleFonts.syne(
                         fontSize: 26,
                         fontWeight: FontWeight.w500,
-                        color: AppColors.primary,
+                        color: primaryTextColor,
                         letterSpacing: -0.52,
                         height: 1.2,
                       ),
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      'Please wait',
+                      config.tr('Please wait', 'காத்திருக்கவும்'),
                       style: GoogleFonts.inter(
                         fontSize: 14,
-                        color: AppColors.textSecondary,
+                        color: config.secondaryTextColor,
                         fontWeight: FontWeight.w400,
                       ),
                     ),
@@ -82,11 +99,12 @@ class _ProcessingScreenState extends State<ProcessingScreen> {
                     // Hero Card
                     Container(
                       decoration: BoxDecoration(
-                        color: Colors.white,
+                        color: cardColor,
                         borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: borderColor),
                         boxShadow: [
                           BoxShadow(
-                            color: AppColors.primary.withValues(alpha: 0.06),
+                            color: Colors.black.withValues(alpha: isDark ? 0.35 : 0.06),
                             blurRadius: 24,
                             offset: const Offset(0, 8),
                           ),
@@ -162,11 +180,12 @@ class _ProcessingScreenState extends State<ProcessingScreen> {
                     // Step List Card
                     Container(
                       decoration: BoxDecoration(
-                        color: Colors.white,
+                        color: cardColor,
                         borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: borderColor),
                         boxShadow: [
                           BoxShadow(
-                            color: AppColors.primary.withValues(alpha: 0.06),
+                            color: Colors.black.withValues(alpha: isDark ? 0.35 : 0.06),
                             blurRadius: 24,
                             offset: const Offset(0, 8),
                           ),

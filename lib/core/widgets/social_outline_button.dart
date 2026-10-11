@@ -16,6 +16,10 @@ class SocialOutlineButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final borderColor = isDark ? const Color(0xFF2C323D) : AppColors.border;
+    final contentColor = isDark ? Colors.white : AppColors.primary;
+
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(100),
@@ -25,19 +29,19 @@ class SocialOutlineButton extends StatelessWidget {
         decoration: BoxDecoration(
           color: Colors.transparent,
           borderRadius: BorderRadius.circular(100),
-          border: Border.all(color: AppColors.border),
+          border: Border.all(color: borderColor),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, size: 28, color: AppColors.primary),
+            Icon(icon, size: 28, color: contentColor),
             const SizedBox(width: 12),
             Text(
               text,
               style: GoogleFonts.inter(
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
-                color: AppColors.primary,
+                color: contentColor,
               ),
             ),
           ],

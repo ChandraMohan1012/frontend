@@ -2,9 +2,8 @@ import 'package:frontend/core/theme/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+import 'package:go_router/go_router.dart';
 import 'package:frontend/core/providers/app_config_provider.dart';
-import 'package:frontend/features/dashboard/screens/home_screen.dart';
-import 'package:frontend/features/auth/screens/create_account_screen.dart';
 import 'package:frontend/core/widgets/custom_text_field.dart';
 import 'package:frontend/core/widgets/primary_button.dart';
 import 'package:frontend/core/widgets/social_outline_button.dart';
@@ -17,6 +16,7 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
+  final _formKey = GlobalKey<FormState>();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   bool _obscurePassword = true;
@@ -26,6 +26,12 @@ class _LoginScreenState extends State<LoginScreen> {
     _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
+  }
+
+  void _handleSignIn() {
+    if (_formKey.currentState?.validate() ?? false) {
+      context.go('/home');
+    }
   }
 
   @override
@@ -132,33 +138,51 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                         
                         // Form Group
-                        Column(
-                          children: [
-                            // Email Input
-                            CustomTextField(
-                              controller: _emailController,
-                              hintText: config.tr('Email or Phone', 'மின்னஞ்சல் அல்லது தொலைபேசி'),
-                              prefixIcon: Icons.mail_outline,
-                              keyboardType: TextInputType.emailAddress,
-                              textInputAction: TextInputAction.next,
-                            ),
-                            const SizedBox(height: 16),
-                            
-                            // Password Input
-                            CustomTextField(
-                              controller: _passwordController,
-                              hintText: config.tr('Password', 'கடவுச்சொல்'),
-                              prefixIcon: Icons.lock_outline,
-                              isPassword: true,
-                              obscureText: _obscurePassword,
-                              textInputAction: TextInputAction.done,
-                              onToggleVisibility: () {
-                                setState(() {
-                                  _obscurePassword = !_obscurePassword;
-                                });
-                              },
-                            ),
-                          ],
+                        Form(
+                          key: _formKey,
+                          child: Column(
+                            children: [
+                              // Email Input
+                              CustomTextField(
+                                controller: _emailController,
+                                hintText: config.tr('Email or Phone', 'மின்னஞ்சல் அல்லது தொலைபேசி'),
+                                prefixIcon: Icons.mail_outline,
+                                keyboardType: TextInputType.emailAddress,
+                                textInputAction: TextInputAction.next,
+                                validator: (val) {
+                                  if (val == null || val.trim().isEmpty) {
+                                    return config.tr('Please enter email or phone', 'மின்னஞ்சல் அல்லது தொலைபேசியை உள்ளிடவும்');
+                                  }
+                                  return null;
+                                },
+                              ),
+                              const SizedBox(height: 16),
+                              
+                              // Password Input
+                              CustomTextField(
+                                controller: _passwordController,
+                                hintText: config.tr('Password', 'கடவுச்சொல்'),
+                                prefixIcon: Icons.lock_outline,
+                                isPassword: true,
+                                obscureText: _obscurePassword,
+                                textInputAction: TextInputAction.done,
+                                onToggleVisibility: () {
+                                  setState(() {
+                                    _obscurePassword = !_obscurePassword;
+                                  });
+                                },
+                                validator: (val) {
+                                  if (val == null || val.isEmpty) {
+                                    return config.tr('Please enter password', 'கடவுச்சொல்லை உள்ளிடவும்');
+                                  }
+                                  if (val.length < 6) {
+                                    return config.tr('Password must be at least 6 characters', 'குறைந்தது 6 எழுத்துக்கள் இருக்க வேண்டும்');
+                                  }
+                                  return null;
+                                },
+                              ),
+                            ],
+                          ),
                         ),
                         
                         // Forgot Password
@@ -179,12 +203,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         // Sign In Button
                         PrimaryButton(
                           text: config.tr('Sign in', 'உள்நுழைக'),
-                          onTap: () {
-                            Navigator.pushReplacement(
-                              context,
-                              MaterialPageRoute(builder: (context) => const HomeScreen()),
-                            );
-                          },
+                          onTap: _handleSignIn,
                         ),
                         
                         // Divider
@@ -213,7 +232,9 @@ class _LoginScreenState extends State<LoginScreen> {
                         SocialOutlineButton(
                           text: config.tr('Continue with Google', 'Google மூலம் தொடரவும்'),
                           icon: Icons.g_mobiledata,
-                          onTap: () {},
+                          onTap: () {
+                            context.go('/home');
+                          },
                         ),
                       ],
                     ),
@@ -234,10 +255,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                         InkWell(
                           onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(builder: (context) => const CreateAccountScreen()),
-                            );
+                            context.push('/create_account');
                           },
                           child: Text(
                             config.tr('Sign up', 'பதிவு செய்க'),

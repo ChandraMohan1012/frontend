@@ -36,15 +36,7 @@ import 'package:frontend/features/cost_estimation/screens/result_cost_search_res
 import 'package:frontend/core/providers/app_config_provider.dart';
 
 void main() {
-  runApp(
-    MultiProvider(
-      providers: [
-        ChangeNotifierProvider(create: (_) => AppConfigProvider()),
-        ChangeNotifierProvider(create: (_) => ProjectProvider()),
-      ],
-      child: const MyApp(),
-    ),
-  );
+  runApp(const MyApp());
 }
 
 final _router = GoRouter(
@@ -100,22 +92,32 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final config = context.watch<AppConfigProvider>();
-    return MaterialApp.router(
-      title: 'Kanavu Illam',
-      themeMode: config.isDarkMode ? ThemeMode.dark : ThemeMode.light,
-      theme: ThemeData(
-        scaffoldBackgroundColor: const Color(0xFFF3F3F3),
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.black, brightness: Brightness.light),
-        useMaterial3: true,
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => AppConfigProvider()),
+        ChangeNotifierProvider(create: (_) => ProjectProvider()),
+      ],
+      child: Builder(
+        builder: (context) {
+          final config = context.watch<AppConfigProvider>();
+          return MaterialApp.router(
+            title: 'Kanavu Illam',
+            themeMode: config.isDarkMode ? ThemeMode.dark : ThemeMode.light,
+            theme: ThemeData(
+              scaffoldBackgroundColor: const Color(0xFFF3F3F3),
+              colorScheme: ColorScheme.fromSeed(seedColor: Colors.black, brightness: Brightness.light),
+              useMaterial3: true,
+            ),
+            darkTheme: ThemeData(
+              scaffoldBackgroundColor: const Color(0xFF111317),
+              colorScheme: ColorScheme.fromSeed(seedColor: Colors.white, brightness: Brightness.dark),
+              useMaterial3: true,
+            ),
+            debugShowCheckedModeBanner: false,
+            routerConfig: _router,
+          );
+        },
       ),
-      darkTheme: ThemeData(
-        scaffoldBackgroundColor: const Color(0xFF111317),
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.white, brightness: Brightness.dark),
-        useMaterial3: true,
-      ),
-      debugShowCheckedModeBanner: false,
-      routerConfig: _router,
     );
   }
 }

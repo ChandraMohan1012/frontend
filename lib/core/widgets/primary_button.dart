@@ -16,6 +16,12 @@ class PrimaryButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final buttonBg = isDark ? Colors.white : AppColors.primary;
+    final textColor = isDark ? Colors.black : Colors.white;
+    final arrowBg = isDark ? Colors.black : Colors.white;
+    final arrowColor = isDark ? Colors.white : AppColors.primary;
+
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(100),
@@ -23,11 +29,11 @@ class PrimaryButton extends StatelessWidget {
         width: double.infinity,
         height: 52,
         decoration: BoxDecoration(
-          color: AppColors.primary,
+          color: buttonBg,
           borderRadius: BorderRadius.circular(100),
           boxShadow: [
             BoxShadow(
-              color: AppColors.primary.withValues(alpha: 0.12),
+              color: (isDark ? Colors.black : AppColors.primary).withValues(alpha: isDark ? 0.35 : 0.12),
               blurRadius: 16,
               offset: const Offset(0, 4),
             ),
@@ -41,7 +47,7 @@ class PrimaryButton extends StatelessWidget {
               style: GoogleFonts.inter(
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
-                color: Colors.white,
+                color: textColor,
               ),
             ),
             if (showArrow)
@@ -50,14 +56,14 @@ class PrimaryButton extends StatelessWidget {
                 child: Container(
                   width: 24,
                   height: 24,
-                  decoration: const BoxDecoration(
-                    color: Colors.white,
+                  decoration: BoxDecoration(
+                    color: arrowBg,
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(
+                  child: Icon(
                     Icons.arrow_forward,
                     size: 14,
-                    color: AppColors.primary,
+                    color: arrowColor,
                   ),
                 ),
               ),
